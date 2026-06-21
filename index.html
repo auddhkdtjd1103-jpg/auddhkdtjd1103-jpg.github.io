@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구미의 환경 문제 탐구</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f5ee;
+            color: #333;
+        }
+        h1, h2, h3 {
+            text-align: center;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            background-color: #4caf50;
+            padding: 10px 0;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            background-color: #4caf50;
+        }
+        .tab-content {
+            display: none;
+            padding: 10px;
+        }
+        .active {
+            display: block;
+        }
+        .card {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>구미의 불법 공장 가동으로 인한 환경 오염</h1>
+
+<div class="tabs">
+    <div class="tab" onclick="showTab('overview')">개요</div>
+    <div class="tab" onclick="showTab('statistics')">통계</div>
+    <div class="tab" onclick="showTab('news')">뉴스</div>
+    <div class="tab" onclick="showTab('solutions')">해결·실천</div>
+</div>
+
+<div id="overview" class="tab-content active">
+    <h2>문제 소개</h2>
+    <p>구미시의 불법 공장 가동으로 인한 환경오염은 대기, 수질, 소음 등 다양한 문제를 초래하고 있습니다.</p>
+</div>
+
+<div id="statistics" class="tab-content">
+    <h2>문제 현황</h2>
+    <canvas id="pollutionChart"></canvas>
+    <script>
+        const ctx = document.getElementById('pollutionChart').getContext('2d');
+        const pollutionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['2019', '2020', '2021', '2022', '2023'],
+                datasets: [{
+                    label: '대기오염물질 배출사업장',
+                    data: [480, 477, 486, 487, 487],
+                    backgroundColor: '#66bb6a',
+                }, {
+                    label: '수질오염물질 배출사업장',
+                    data: [149, 154, 158, 157, 157],
+                    backgroundColor: '#42a5f5',
+                }, {
+                    label: '소음 및 진동 관련 사업장',
+                    data: [21, 20, 20, 23, 23],
+                    backgroundColor: '#ffb74d',
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</div>
+
+<div id="news" class="tab-content">
+    <h2>뉴스 요약</h2>
+    <div class="card">
+        <h3>구미국가산업단지 3공단 내 불법 공장 운영…환경·화재 위험 '심각'</h3>
+        <p>구미국가산업단지 3공단 내에 위치한 한 무허가 공장이 유해화학물질을 배출하며 불법으로 운영되고 있습니다. 이 공장은 대기오염 방지시설이 없어 심각한 환경오염 우려가 발생하고 있습니다.</p>
+        <a href="https://www.maeilbo.com/news/articleView.html?idxno=XXXX" target="_blank">출처: 매일일보</a>
+    </div>
+</div>
+
+<div id="solutions" class="tab-content">
+    <h2>해결 방안</h2>
+    <ol>
+        <li>SNS 카드뉴스 홍보: 환경 문제 현황을 카드뉴스로 알린다.</li>
+        <li>단속 드론 도입 정책 건의: 드론을 활용한 상시 감시를 제안한다.</li>
+        <li>환경 신문고 기능 알고 실천하기: 신고를 직접 실천한다.</li>
+    </ol>
+    <h3>내가 실천할 한 가지</h3>
+    <p>환경 신문고 앱을 설치하고 기능을 살펴본다.</p>
+</div>
+
+<footer>
+    경북 오상고 · 구미 문제해결 프로젝트
+</footer>
+
+<script>
+    function showTab(tabId) {
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(tabId).classList.add('active');
+    }
+</script>
+</body>
+</html>
