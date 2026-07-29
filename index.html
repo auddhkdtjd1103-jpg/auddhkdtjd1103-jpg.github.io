@@ -1,138 +1,1182 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>구미의 환경 문제 탐구</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f5ee;
-            color: #333;
-        }
-        h1, h2, h3 {
-            text-align: center;
-        }
-        .tabs {
-            display: flex;
-            justify-content: space-around;
-            background-color: #4caf50;
-            padding: 10px 0;
-        }
-        .tab {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            color: white;
-            background-color: #4caf50;
-        }
-        .tab-content {
-            display: none;
-            padding: 10px;
-        }
-        .active {
-            display: block;
-        }
-        .card {
-            background: white;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LIMEN - 문턱 너머의 사람들</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#0a0a10;
+  --bg-panel:#14141c;
+  --bg-panel2:#1c1c28;
+  --line:#2a2a38;
+  --text-main:#eae8f0;
+  --text-dim:#8f8ba3;
+  --text-faint:#5f5c72;
+  --accent:#a78bfa;
+  --accent-dim:#7c6bb8;
+  --gold:#d9b16c;
+  --good:#8fd9c4;
+  --bad:#d9707a;
+  --radius:14px;
+  --safe-top: env(safe-area-inset-top,0px);
+  --safe-bottom: env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;background:#000;}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  color:var(--text-main);
+  display:flex; justify-content:center; align-items:center;
+  min-height:100%;
+  overflow:hidden;
+}
+#app{
+  width:390px; height:844px;
+  max-width:100vw; max-height:100vh;
+  background:var(--bg-deep);
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 0 60px rgba(0,0,0,0.8);
+  display:flex; flex-direction:column;
+}
+.serif{font-family:'Noto Serif KR',serif;}
+.screen{
+  position:absolute; inset:0;
+  display:none;
+  flex-direction:column;
+  padding-top:var(--safe-top);
+  padding-bottom:var(--safe-bottom);
+  animation:fadeIn .35s ease;
+}
+.screen.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* threshold signature line */
+.threshold{
+  height:1px; width:100%;
+  background:linear-gradient(90deg, transparent, var(--gold) 20%, var(--accent) 50%, var(--gold) 80%, transparent);
+  opacity:.55;
+  position:relative;
+}
+.threshold::after{
+  content:''; position:absolute; top:-1px; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  filter:blur(3px); opacity:.5;
+}
+
+/* ---------- TITLE ---------- */
+#screen-title{
+  justify-content:center; align-items:center; text-align:center; gap:0;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(167,139,250,0.14), transparent 60%),
+    radial-gradient(ellipse at 50% 90%, rgba(217,177,108,0.08), transparent 55%),
+    var(--bg-deep);
+}
+.title-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;}
+.title-eyebrow{
+  letter-spacing:.4em; font-size:11px; color:var(--text-faint); text-transform:uppercase;
+}
+.title-main{
+  font-size:56px; font-weight:700; letter-spacing:.12em;
+  background:linear-gradient(180deg,#fff, var(--accent) 120%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.title-sub{font-size:15px; color:var(--text-dim); letter-spacing:.05em;}
+.title-threshold{width:220px; margin:6px 0;}
+.title-menu{margin-top:46px; display:flex; flex-direction:column; gap:12px; width:240px;}
+.tbtn{
+  padding:14px 0; border:1px solid var(--line); background:rgba(255,255,255,0.02);
+  color:var(--text-main); border-radius:999px; font-size:14px; letter-spacing:.08em;
+  cursor:pointer; transition:.2s; font-family:'Noto Sans KR',sans-serif;
+}
+.tbtn:hover{border-color:var(--accent); background:rgba(167,139,250,0.08); color:#fff;}
+.tbtn.ghost{border:none; color:var(--text-faint); font-size:12px;}
+
+/* ---------- GENERIC HEADER ---------- */
+.topbar{
+  display:flex; align-items:center; gap:10px; padding:16px 18px 12px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg-panel);
+}
+.topbar .back{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--line);
+  background:transparent;color:var(--text-dim);display:flex;align-items:center;justify-content:center;
+  cursor:pointer; font-size:16px;
+}
+.topbar .back:hover{color:#fff;border-color:var(--accent);}
+.topbar h2{font-size:16px;font-weight:600;margin:0;letter-spacing:.03em;}
+.topbar h2 span{color:var(--text-faint);font-size:11px;display:block;font-weight:400;margin-top:2px;}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{width:4px;}
+.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px;}
+
+/* ---------- EPISODE LIST ---------- */
+.ep-list{padding:16px 18px 30px;display:flex;flex-direction:column;gap:12px;}
+.ep-card{
+  background:var(--bg-panel2); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px; cursor:pointer; transition:.2s; position:relative; overflow:hidden;
+}
+.ep-card:hover{border-color:var(--accent-dim); transform:translateY(-1px);}
+.ep-card .ep-num{font-family:'Noto Serif KR',serif;font-size:11px;color:var(--gold);letter-spacing:.15em;}
+.ep-card h3{margin:6px 0 4px;font-size:16px;font-family:'Noto Serif KR',serif;font-weight:600;}
+.ep-card p{margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.5;}
+.ep-card .ep-chars{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
+.ep-chip{font-size:10.5px;color:var(--text-faint);border:1px solid var(--line);padding:2px 8px;border-radius:999px;}
+.empty-note{padding:40px 18px;text-align:center;color:var(--text-faint);font-size:13px;}
+
+/* ---------- CHARACTER GRID / MODAL ---------- */
+.char-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 18px 30px;}
+.char-card{
+  background:var(--bg-panel2);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;transition:.2s;
+}
+.char-card:hover{border-color:var(--accent-dim);}
+.char-card .thumb{width:100%;height:150px;background-size:cover;background-position:center top;background-color:#1c1c28;}
+.char-card .cinfo{padding:10px 12px;}
+.char-card .cinfo h4{margin:0 0 2px;font-size:13.5px;font-family:'Noto Serif KR',serif;}
+.char-card .cinfo span{font-size:11px;color:var(--text-faint);}
+
+.modal-overlay{
+  position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(2px);
+  display:none; align-items:flex-end; justify-content:center; z-index:50;
+}
+.modal-overlay.active{display:flex;}
+.modal-sheet{
+  width:100%; max-height:82%; background:var(--bg-panel); border-radius:20px 20px 0 0;
+  border:1px solid var(--line); border-bottom:none; overflow-y:auto; animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-sheet .mhandle{width:36px;height:4px;background:var(--line);border-radius:2px;margin:10px auto;}
+.modal-portrait{width:100%;height:260px;background-size:cover;background-position:center top;background-color:#1c1c28;}
+.modal-body{padding:18px 22px 30px;}
+.modal-body h3{font-family:'Noto Serif KR',serif;font-size:22px;margin:0 0 4px;}
+.modal-body .age{color:var(--gold);font-size:12.5px;margin-bottom:14px;}
+.modal-body p{font-size:13.5px;line-height:1.7;color:var(--text-dim);white-space:pre-wrap;}
+.modal-close-row{display:flex;justify-content:center;padding:0 22px 20px;}
+.close-btn{
+  padding:10px 28px;border-radius:999px;border:1px solid var(--line);background:transparent;
+  color:var(--text-dim);font-size:12.5px;cursor:pointer;
+}
+.close-btn:hover{color:#fff;border-color:var(--accent);}
+
+/* ---------- GALLERY ---------- */
+.gallery-summary{padding:18px 18px 6px;text-align:center;}
+.gallery-summary .pct{font-family:'Noto Serif KR',serif;font-size:34px;color:var(--accent);}
+.gallery-summary .lbl{font-size:11px;color:var(--text-faint);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.gallery-list{padding:10px 18px 30px;display:flex;flex-direction:column;gap:14px;}
+.gallery-ep{border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:var(--bg-panel2);}
+.gallery-ep h4{margin:0 0 10px;font-size:13.5px;font-family:'Noto Serif KR',serif;}
+.ending-slots{display:grid;grid-template-columns:repeat(auto-fill, minmax(72px,1fr));gap:8px;}
+.ending-slot{
+  aspect-ratio:3/4;border-radius:10px;background-size:cover;background-position:center;
+  background-color:#1c1c28;position:relative;border:1px solid var(--line);
+  display:flex;align-items:flex-end;
+}
+.ending-slot.locked{filter:grayscale(1) brightness(.35);}
+.ending-slot .tag{
+  width:100%;font-size:9.5px;text-align:center;padding:4px 0;background:rgba(0,0,0,0.55);letter-spacing:.05em;
+}
+.ending-slot.happy .tag{color:var(--good);}
+.ending-slot.normal .tag{color:var(--gold);}
+.ending-slot.bad .tag{color:var(--bad);}
+.ending-slot.hidden{border-color:var(--accent-dim);box-shadow:0 0 10px rgba(167,139,250,0.35);}
+.ending-slot.hidden .tag{color:var(--accent);}
+
+/* ---------- PLAY SCREEN ---------- */
+#screen-play{padding:0;}
+.stage{flex:1; position:relative; overflow:hidden; background-color:#000;}
+.stage .bg-layer{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .4s;}
+.stage .char-layer{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:88%;width:auto;
+  background-size:contain;background-position:bottom center;background-repeat:no-repeat;
+  filter:drop-shadow(0 10px 30px rgba(0,0,0,0.6)); transition:opacity .3s; max-width:100%;}
+.stage-topbar{
+  position:absolute; top:0; left:0; right:0; padding:calc(var(--safe-top) + 8px) 12px 8px;
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(180deg, rgba(0,0,0,.55), transparent);
+}
+.stage-topbar button{
+  background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); color:var(--text-dim);
+  border-radius:999px; padding:5px 12px; font-size:11px; cursor:pointer;
+}
+.stage-topbar button:hover{color:#fff;}
+.choice-layer{
+  position:absolute; inset:0; background:rgba(6,6,10,0.72); display:none;
+  flex-direction:column; justify-content:center; align-items:center; gap:12px; padding:0 24px; z-index:10;
+}
+.choice-layer.active{display:flex;}
+.choice-btn{
+  width:100%; text-align:left; padding:14px 18px; border-radius:12px; border:1px solid var(--line);
+  background:rgba(28,28,40,0.9); color:var(--text-main); font-size:13.5px; line-height:1.5; cursor:pointer;
+  transition:.2s; font-family:'Noto Sans KR',sans-serif;
+}
+.choice-btn:hover{border-color:var(--accent); background:rgba(167,139,250,0.14); transform:translateX(2px);}
+
+.dialogue-box{
+  background:var(--bg-panel); border-top:1px solid var(--line); padding:14px 18px 10px;
+  padding-bottom:calc(10px + var(--safe-bottom));
+}
+.nametag{
+  display:inline-block; font-family:'Noto Serif KR',serif; font-size:13.5px; color:var(--gold);
+  padding:3px 14px; border:1px solid var(--gold); border-radius:999px; margin-bottom:8px; letter-spacing:.05em;
+}
+.dtext{min-height:64px; font-size:14px; line-height:1.75; color:var(--text-main);}
+.dtext .cursor{opacity:.6;}
+.ctrl-row{display:flex;justify-content:space-between;margin-top:10px;gap:8px;}
+.ctrl-row button{
+  flex:1; background:transparent; border:1px solid var(--line); color:var(--text-dim);
+  padding:9px 0; border-radius:10px; font-size:11.5px; cursor:pointer; letter-spacing:.03em;
+}
+.ctrl-row button.primary{background:var(--accent); border-color:var(--accent); color:#100c1e; font-weight:700;}
+.ctrl-row button.active-toggle{color:var(--accent);border-color:var(--accent);}
+
+/* log modal */
+.log-panel{position:absolute;inset:0;background:rgba(6,6,10,0.92);z-index:20;display:none;flex-direction:column;padding-top:var(--safe-top);}
+.log-panel.active{display:flex;}
+.log-entries{flex:1;overflow-y:auto;padding:14px 18px;}
+.log-entry{margin-bottom:14px;}
+.log-entry .who{color:var(--gold);font-size:11.5px;margin-bottom:2px;font-family:'Noto Serif KR',serif;}
+.log-entry .txt{font-size:13px;color:var(--text-dim);line-height:1.6;}
+
+/* ---------- ENDING SCREEN ---------- */
+#screen-ending{align-items:center;justify-content:flex-end;position:relative;}
+.ending-bg{position:absolute;inset:0;background-size:cover;background-position:center;}
+.ending-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,10,16,0) 30%, rgba(10,10,16,0.95) 85%);}
+.ending-content{position:relative;padding:0 26px calc(40px + var(--safe-bottom));text-align:center;width:100%;}
+.ending-tag{font-size:11px;letter-spacing:.3em;color:var(--text-faint);text-transform:uppercase;}
+.ending-title{font-family:'Noto Serif KR',serif;font-size:30px;margin:8px 0 6px;}
+.ending-title.happy{color:var(--good);}
+.ending-title.normal{color:var(--gold);}
+.ending-title.bad{color:var(--bad);}
+.ending-title.hidden{color:var(--accent);text-shadow:0 0 18px rgba(167,139,250,0.6);}
+.ending-desc{font-size:12.5px;color:var(--text-dim);margin-bottom:26px;}
+.ending-btns{display:flex;gap:10px;}
+.ending-btns button{flex:1;padding:12px 0;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,0.04);color:#fff;font-size:12.5px;cursor:pointer;}
+.ending-btns button.primary{background:var(--accent);border-color:var(--accent);color:#100c1e;font-weight:700;}
+
+/* ---------- ADMIN ---------- */
+.admin-pass{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 30px;text-align:center;}
+.admin-pass input{
+  width:180px;text-align:center;letter-spacing:.5em;font-size:20px;padding:12px 0;border-radius:10px;
+  border:1px solid var(--line);background:var(--bg-panel2);color:#fff;
+}
+.admin-tabs{display:flex;border-bottom:1px solid var(--line);background:var(--bg-panel);}
+.admin-tab{flex:1;text-align:center;padding:12px 0;font-size:12.5px;color:var(--text-faint);cursor:pointer;border-bottom:2px solid transparent;}
+.admin-tab.active{color:var(--accent);border-color:var(--accent);}
+.admin-body{padding:16px 18px 40px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11.5px;color:var(--text-faint);margin-bottom:6px;letter-spacing:.03em;}
+.field input[type=text],.field input[type=number],.field textarea,.field select{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg-panel2);
+  color:#fff;font-size:13px;font-family:inherit;
+}
+.field textarea{min-height:64px;resize:vertical;}
+.field-row{display:flex;gap:10px;}
+.field-row .field{flex:1;}
+.upload-box{
+  border:1px dashed var(--line);border-radius:10px;height:100px;background-size:cover;background-position:center;
+  display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:11.5px;cursor:pointer;
+  position:relative;overflow:hidden;background-color:var(--bg-panel2);
+}
+.upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-box span{background:rgba(0,0,0,.5);padding:4px 10px;border-radius:999px;}
+.btn-main{
+  width:100%;padding:12px 0;border-radius:10px;border:none;background:var(--accent);color:#100c1e;
+  font-weight:700;font-size:13.5px;cursor:pointer;margin-top:6px;
+}
+.btn-outline{
+  width:100%;padding:11px 0;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--text-dim);
+  font-size:13px;cursor:pointer;margin-top:8px;
+}
+.btn-danger{border-color:var(--bad);color:var(--bad);}
+.admin-list-item{
+  background:var(--bg-panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;
+}
+.admin-list-item .info h5{margin:0 0 3px;font-size:13.5px;}
+.admin-list-item .info span{font-size:11px;color:var(--text-faint);}
+.admin-list-item .del{color:var(--bad);font-size:16px;padding:4px 8px;cursor:pointer;}
+.section-title{font-size:12px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;margin:22px 0 12px;}
+.scene-item{border-left:2px solid var(--accent-dim);padding:10px 0 10px 12px;margin-bottom:10px;background:var(--bg-panel2);border-radius:0 10px 10px 0;}
+.scene-item .stype{font-size:10px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;}
+.scene-item .stxt{font-size:12.5px;color:var(--text-dim);margin-top:4px;line-height:1.5;}
+.scene-item .sops{display:flex;gap:14px;margin-top:8px;}
+.scene-item .sops span{font-size:11px;color:var(--text-faint);cursor:pointer;}
+.chip-select{display:flex;flex-wrap:wrap;gap:6px;}
+.chip-select .chip{
+  padding:5px 12px;border-radius:999px;border:1px solid var(--line);font-size:11.5px;color:var(--text-dim);cursor:pointer;
+}
+.chip-select .chip.sel{background:var(--accent);border-color:var(--accent);color:#100c1e;font-weight:700;}
+.opt-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+.opt-row input[type=text]{flex:1;}
+.opt-row input[type=number]{width:56px;text-align:center;}
+.toast{
+  position:absolute;bottom:calc(30px + var(--safe-bottom));left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#100c1e;padding:9px 20px;border-radius:999px;font-size:12.5px;font-weight:700;
+  z-index:200;opacity:0;pointer-events:none;transition:.3s;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+</style>
 </head>
 <body>
+<div id="app">
 
-<h1>구미의 불법 공장 가동으로 인한 환경 오염</h1>
-
-<div class="tabs">
-    <div class="tab" onclick="showTab('overview')">개요</div>
-    <div class="tab" onclick="showTab('statistics')">통계</div>
-    <div class="tab" onclick="showTab('news')">뉴스</div>
-    <div class="tab" onclick="showTab('solutions')">해결·실천</div>
-</div>
-
-<div id="overview" class="tab-content active">
-    <h2>문제 소개</h2>
-    <p>구미시의 불법 공장 가동으로 인한 환경오염은 대기, 수질, 소음 등 다양한 문제를 초래하고 있습니다.</p>
-</div>
-
-<div id="statistics" class="tab-content">
-    <h2>문제 현황</h2>
-    <canvas id="pollutionChart"></canvas>
-    <script>
-        const ctx = document.getElementById('pollutionChart').getContext('2d');
-        const pollutionChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['2019', '2020', '2021', '2022', '2023'],
-                datasets: [{
-                    label: '대기오염물질 배출사업장',
-                    data: [480, 477, 486, 487, 487],
-                    backgroundColor: '#66bb6a',
-                }, {
-                    label: '수질오염물질 배출사업장',
-                    data: [149, 154, 158, 157, 157],
-                    backgroundColor: '#42a5f5',
-                }, {
-                    label: '소음 및 진동 관련 사업장',
-                    data: [21, 20, 20, 23, 23],
-                    backgroundColor: '#ffb74d',
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>
-</div>
-
-<div id="news" class="tab-content">
-    <h2>뉴스 요약</h2>
-    <div class="card">
-        <h3>구미국가산업단지 3공단 내 불법 공장 운영…환경·화재 위험 '심각'</h3>
-        <p>구미국가산업단지 3공단 내에 위치한 한 무허가 공장이 유해화학물질을 배출하며 불법으로 운영되고 있습니다. 이 공장은 대기오염 방지시설이 없어 심각한 환경오염 우려가 발생하고 있습니다.</p>
-        <a href="https://www.maeilbo.com/news/articleView.html?idxno=XXXX" target="_blank">출처: 매일일보</a>
+  <!-- ===================== TITLE ===================== -->
+  <div class="screen active" id="screen-title">
+    <div class="title-wrap">
+      <div class="title-eyebrow">Visual Novel</div>
+      <div class="title-main serif">LIMEN</div>
+      <div class="title-threshold threshold"></div>
+      <div class="title-sub serif">문턱 너머의 사람들</div>
+      <div class="title-menu">
+        <button class="tbtn" onclick="nav('episodeList')">에피소드 목록</button>
+        <button class="tbtn" onclick="nav('charList')">캐릭터 프로필</button>
+        <button class="tbtn" onclick="nav('gallery')">갤러리 / 엔딩 수집</button>
+        <button class="tbtn ghost" onclick="openAdminLogin()">관리자 모드</button>
+      </div>
     </div>
+  </div>
+
+  <!-- ===================== EPISODE LIST ===================== -->
+  <div class="screen" id="screen-episodeList">
+    <div class="topbar"><button class="back" onclick="nav('title')">‹</button><h2>에피소드<span>Episode Select</span></h2></div>
+    <div class="scroll"><div class="ep-list" id="epListContainer"></div></div>
+  </div>
+
+  <!-- ===================== CHARACTER LIST ===================== -->
+  <div class="screen" id="screen-charList">
+    <div class="topbar"><button class="back" onclick="nav('title')">‹</button><h2>캐릭터<span>Profiles</span></h2></div>
+    <div class="scroll"><div class="char-grid" id="charGridContainer"></div></div>
+  </div>
+
+  <!-- ===================== GALLERY ===================== -->
+  <div class="screen" id="screen-gallery">
+    <div class="topbar"><button class="back" onclick="nav('title')">‹</button><h2>갤러리<span>Ending Collection</span></h2></div>
+    <div class="scroll">
+      <div class="gallery-summary"><div class="pct" id="galleryPct">0%</div><div class="lbl">Collected</div></div>
+      <div class="gallery-list" id="galleryContainer"></div>
+    </div>
+  </div>
+
+  <!-- ===================== PLAY ===================== -->
+  <div class="screen" id="screen-play">
+    <div class="stage">
+      <div class="bg-layer" id="stageBg"></div>
+      <div class="char-layer" id="stageChar"></div>
+      <div class="stage-topbar">
+        <button onclick="exitToTitle()">메인으로</button>
+        <button id="skipBtn" onclick="skipAll()">스킵</button>
+      </div>
+      <div class="choice-layer" id="choiceLayer"></div>
+      <div class="log-panel" id="logPanel">
+        <div class="topbar"><button class="back" onclick="toggleLog(false)">‹</button><h2>로그<span>Dialogue Log</span></h2></div>
+        <div class="log-entries" id="logEntries"></div>
+      </div>
+    </div>
+    <div class="dialogue-box">
+      <div class="nametag" id="nameTag">???</div>
+      <div class="dtext" id="dText"></div>
+      <div class="ctrl-row">
+        <button onclick="advance()">다음 ▸</button>
+        <button id="autoBtn" onclick="toggleAuto()">오토</button>
+        <button onclick="toggleLog(true)">로그</button>
+        <button onclick="exitToTitle()">메인으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ENDING ===================== -->
+  <div class="screen" id="screen-ending">
+    <div class="ending-bg" id="endingBg"></div>
+    <div class="ending-overlay"></div>
+    <div class="ending-content">
+      <div class="ending-tag">ENDING</div>
+      <div class="ending-title serif" id="endingTitle">엔딩</div>
+      <div class="ending-desc" id="endingDesc"></div>
+      <div class="ending-btns">
+        <button onclick="exitToTitle()">메인으로</button>
+        <button class="primary" onclick="retryEpisode()">다시 하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ADMIN LOGIN ===================== -->
+  <div class="screen" id="screen-adminLogin">
+    <div class="topbar"><button class="back" onclick="nav('title')">‹</button><h2>관리자<span>Authentication</span></h2></div>
+    <div class="admin-pass">
+      <div style="font-size:13px;color:var(--text-dim);">비밀번호를 입력하세요</div>
+      <input type="password" id="adminPassInput" maxlength="4" inputmode="numeric" placeholder="••••">
+      <button class="btn-main" style="width:180px" onclick="checkAdminPass()">확인</button>
+      <div id="adminPassErr" style="color:var(--bad);font-size:12px;height:14px;"></div>
+    </div>
+  </div>
+
+  <!-- ===================== ADMIN DASHBOARD ===================== -->
+  <div class="screen" id="screen-admin">
+    <div class="topbar"><button class="back" onclick="nav('title')">‹</button><h2>관리자 대시보드<span>Content Manager</span></h2></div>
+    <div class="admin-tabs">
+      <div class="admin-tab active" data-tab="chars" onclick="switchAdminTab('chars')">캐릭터</div>
+      <div class="admin-tab" data-tab="eps" onclick="switchAdminTab('eps')">에피소드</div>
+      <div class="admin-tab" data-tab="scenes" onclick="switchAdminTab('scenes')">장면</div>
+    </div>
+    <div class="scroll">
+      <div class="admin-body" id="adminBody"></div>
+    </div>
+  </div>
+
 </div>
 
-<div id="solutions" class="tab-content">
-    <h2>해결 방안</h2>
-    <ol>
-        <li>SNS 카드뉴스 홍보: 환경 문제 현황을 카드뉴스로 알린다.</li>
-        <li>단속 드론 도입 정책 건의: 드론을 활용한 상시 감시를 제안한다.</li>
-        <li>환경 신문고 기능 알고 실천하기: 신고를 직접 실천한다.</li>
-    </ol>
-    <h3>내가 실천할 한 가지</h3>
-    <p>환경 신문고 앱을 설치하고 기능을 살펴본다.</p>
-</div>
-
-<footer>
-    경북 오상고 · 구미 문제해결 프로젝트
-</footer>
+<div class="toast" id="toast"></div>
 
 <script>
-    function showTab(tabId) {
-        const contents = document.querySelectorAll('.tab-content');
-        contents.forEach(content => {
-            content.classList.remove('active');
-        });
-        document.getElementById(tabId).classList.add('active');
+/* ============================================================
+   LIMEN — data & state
+============================================================ */
+const STORAGE_KEY='limen_data_v1';
+
+function ph(text,w=390,h=520,c1='#20202c',c2='#0a0a10'){
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/>
+    </linearGradient></defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <text x='50%' y='50%' fill='#6b6780' font-size='18' font-family='sans-serif' text-anchor='middle' dominant-baseline='middle'>${text}</text>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+}
+
+function uid(prefix){ return prefix+'_'+Math.random().toString(36).slice(2,9); }
+
+function defaultData(){
+  const c1={id:'c_yuna',name:'윤아',age:24,image:'',intro:'낡은 서점의 야간 관리인.\n말수가 적지만 손님이 놓고 간 물건은 반드시 기억한다.\n문턱을 넘어오는 사람들의 사연을 조용히 지켜본다.'};
+  const c2={id:'c_hajun',name:'하준',age:27,image:'',intro:'비 오는 날에만 나타나는 정체불명의 손님.\n서점 안쪽, 아무도 앉지 않는 자리를 좋아한다.\n무언가를 찾고 있는 듯하다.'};
+  return {
+    characters:[c1,c2],
+    episodes:[{
+      id:'ep_1',
+      title:'첫 번째 문턱',
+      description:'비 오는 밤, 서점의 문이 열리고 낯선 손님이 들어온다.',
+      characters:['c_yuna','c_hajun'],
+      bgDefault:'',
+      scenes:[
+        {id:uid('sc'),type:'dialogue',bg:'',character:'',speaker:'',text:'빗소리가 유리창을 두드리는 밤. 서점의 낡은 종이 조용히 울렸다.'},
+        {id:uid('sc'),type:'dialogue',bg:'',character:'c_yuna',speaker:'윤아',text:'…이 시간에 손님이라니, 드문 일이네.'},
+        {id:uid('sc'),type:'dialogue',bg:'',character:'c_hajun',speaker:'하준',text:'죄송합니다. 비를 좀 피하려고요. 잠깐이면 됩니다.'},
+        {id:uid('sc'),type:'dialogue',bg:'',character:'c_yuna',speaker:'윤아',text:'괜찮아요. 원한다면 안쪽 자리에 앉아도 좋아요.'},
+        {id:uid('sc'),type:'choice',bg:'',character:'c_hajun',speaker:'하준',text:'그가 문턱에 서서 잠시 망설인다. 당신은 어떻게 반응할까?',
+          options:[
+            {text:'괜찮으니 편히 들어오라고 손짓한다.',score:2,reaction:'그는 옅게 웃으며 조심스레 안으로 들어섰다.'},
+            {text:'말없이 자리를 안내한다.',score:1,reaction:'그는 말없이 고개를 끄덕이곤 자리로 향했다.'},
+            {text:'조용히 하던 일을 계속한다.',score:0,reaction:'그는 잠시 머뭇거리다, 조용히 구석 자리에 앉았다.'}
+          ]},
+        {id:uid('sc'),type:'dialogue',bg:'',character:'c_hajun',speaker:'하준',text:'…감사합니다. 사실, 예전에 여기 온 적이 있어요.'},
+        {id:uid('sc'),type:'choice',bg:'',character:'c_yuna',speaker:'윤아',text:'그의 말에 옛 기억이 스친다. 당신의 선택은?',
+          options:[
+            {text:'기억을 더듬으며 다정하게 되묻는다.',score:2,reaction:'"혹시… 그때 그 손님이었나요?" 그녀의 눈이 반짝였다.'},
+            {text:'가볍게 고개를 끄덕인다.',score:1,reaction:'"그랬군요." 그녀는 옅은 미소로 답했다.'},
+            {text:'별 관심 없다는 듯 넘긴다.',score:0,reaction:'그녀는 짧게 "그래요" 하고는 시선을 돌렸다.'}
+          ]},
+        {id:uid('sc'),type:'dialogue',bg:'',character:'',speaker:'',text:'빗소리 사이로, 두 사람 사이의 거리가 아주 조금 좁혀졌다.'}
+      ],
+      endingImages:{happy:'',normal:'',bad:'',hidden:''},
+      endingTexts:{
+        happy:'문턱을 넘어온 그는, 처음으로 이 서점을 \'집\'이라 부를 수 있었다.',
+        normal:'그는 조용히 비가 그치기를 기다렸다가, 다음을 기약하며 떠났다.',
+        bad:'그는 끝내 아무 말도 남기지 않고, 빗속으로 사라졌다.',
+        hidden:'훗날, 그날 밤의 모든 순간들이 사실은 하나의 약속이었음이 밝혀진다. 문턱 너머에서, 두 사람은 비로소 서로의 진짜 이름을 부른다.'
+      }
+    }],
+    endingProgress:{}
+  };
+}
+
+let DB = loadData();
+function loadData(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const d=defaultData();
+  saveData(d);
+  return d;
+}
+function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d||DB)); }
+
+function getChar(id){ return DB.characters.find(c=>c.id===id); }
+function getEp(id){ return DB.episodes.find(e=>e.id===id); }
+
+/* ============================================================
+   Navigation
+============================================================ */
+function nav(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(name==='episodeList') renderEpisodeList();
+  if(name==='charList') renderCharList();
+  if(name==='gallery') renderGallery();
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),1600);
+}
+
+/* ============================================================
+   Episode List
+============================================================ */
+function renderEpisodeList(){
+  const c=document.getElementById('epListContainer');
+  c.innerHTML='';
+  if(DB.episodes.length===0){ c.innerHTML='<div class="empty-note">등록된 에피소드가 없습니다.</div>'; return; }
+  DB.episodes.forEach((ep,i)=>{
+    const div=document.createElement('div');
+    div.className='ep-card';
+    div.onclick=()=>startEpisode(ep.id);
+    const chars=(ep.characters||[]).map(id=>getChar(id)).filter(Boolean).map(c=>`<span class="ep-chip">${c.name}</span>`).join('');
+    div.innerHTML=`<div class="ep-num">EPISODE ${String(i+1).padStart(2,'0')}</div>
+      <h3 class="serif">${ep.title}</h3>
+      <p>${ep.description||''}</p>
+      <div class="ep-chars">${chars}</div>`;
+    c.appendChild(div);
+  });
+}
+
+/* ============================================================
+   Character List / Modal
+============================================================ */
+function renderCharList(){
+  const c=document.getElementById('charGridContainer');
+  c.innerHTML='';
+  if(DB.characters.length===0){ c.innerHTML='<div class="empty-note">등록된 캐릭터가 없습니다.</div>'; return; }
+  DB.characters.forEach(ch=>{
+    const div=document.createElement('div');
+    div.className='char-card';
+    div.onclick=()=>openCharModal(ch.id);
+    const img=ch.image||ph(ch.name,300,300);
+    div.innerHTML=`<div class="thumb" style="background-image:url('${img}')"></div>
+      <div class="cinfo"><h4>${ch.name}</h4><span>${ch.age}세</span></div>`;
+    c.appendChild(div);
+  });
+}
+function openCharModal(id){
+  const ch=getChar(id); if(!ch) return;
+  const overlay=document.createElement('div');
+  overlay.className='modal-overlay active';
+  overlay.id='charModalOverlay';
+  overlay.onclick=(e)=>{ if(e.target===overlay) closeCharModal(); };
+  const img=ch.image||ph(ch.name,390,400);
+  overlay.innerHTML=`<div class="modal-sheet">
+    <div class="mhandle"></div>
+    <div class="modal-portrait" style="background-image:url('${img}')"></div>
+    <div class="modal-body">
+      <h3 class="serif">${ch.name}</h3>
+      <div class="age">${ch.age}세</div>
+      <p>${(ch.intro||'').replace(/</g,'&lt;')}</p>
+    </div>
+    <div class="modal-close-row"><button class="close-btn" onclick="closeCharModal()">닫기</button></div>
+  </div>`;
+  document.getElementById('app').appendChild(overlay);
+}
+function closeCharModal(){
+  const el=document.getElementById('charModalOverlay');
+  if(el) el.remove();
+}
+
+/* ============================================================
+   Gallery
+   - happy/normal/bad: 항상 표시, 미달성 시 잠금(회색) 칸
+   - hidden: 해금 전에는 칸 자체를 렌더링하지 않음(완전히 숨김)
+============================================================ */
+function renderGallery(){
+  const total=DB.episodes.length*4; // happy+normal+bad+hidden
+  let unlocked=0;
+  const list=document.getElementById('galleryContainer');
+  list.innerHTML='';
+  DB.episodes.forEach(ep=>{
+    const prog=DB.endingProgress[ep.id]||{};
+    ['happy','normal','bad','hidden'].forEach(k=>{ if(prog[k]) unlocked++; });
+
+    const normalSlots=['happy','normal','bad'].map(k=>{
+      const got=prog[k];
+      const img=(ep.endingImages&&ep.endingImages[k])||ph(k,200,260);
+      const label=k==='happy'?'해피':k==='normal'?'노멀':'배드';
+      return `<div class="ending-slot ${k} ${got?'':'locked'}" style="background-image:url('${got?img:''}')">
+        <div class="tag">${got?label:'?'}</div></div>`;
+    }).join('');
+
+    // 히든 엔딩은 해금되었을 때만 칸이 추가됨
+    const hiddenSlot = prog.hidden
+      ? `<div class="ending-slot hidden" style="background-image:url('${(ep.endingImages&&ep.endingImages.hidden)||ph('히든',200,260)}')">
+          <div class="tag">히든</div></div>`
+      : '';
+
+    const box=document.createElement('div');
+    box.className='gallery-ep';
+    box.innerHTML=`<h4 class="serif">${ep.title}</h4>
+      <div class="ending-slots">${normalSlots}${hiddenSlot}</div>`;
+    list.appendChild(box);
+  });
+  const pct = total>0 ? Math.round(unlocked/total*100) : 0;
+  document.getElementById('galleryPct').textContent=pct+'%';
+}
+
+/* ============================================================
+   Play Engine
+============================================================ */
+let playState=null; // {ep, sceneIndex, score, maxScore, log:[], autoTimer, typing}
+
+function startEpisode(epId){
+  const ep=getEp(epId); if(!ep) return;
+  playState={ ep, sceneIndex:0, score:0, choiceCount:0, log:[], auto:false, typing:null, mode:'scene', pendingReaction:'' };
+  nav('play');
+  document.getElementById('choiceLayer').classList.remove('active');
+  toggleLog(false);
+  renderScene();
+}
+function retryEpisode(){ startEpisode(playState.ep.id); }
+function exitToTitle(){
+  clearAutoTimer();
+  if(playState && playState.typing) { clearInterval(playState.typing); playState.typing=null; }
+  nav('title');
+}
+
+function currentScene(){ return playState.ep.scenes[playState.sceneIndex]; }
+
+function renderScene(){
+  const scene=currentScene();
+  if(!scene){ finishEpisode(); return; }
+
+  playState.mode='scene';
+  playState.pendingReaction='';
+
+  const bgImg = scene.bg || playState.ep.bgDefault || '';
+  document.getElementById('stageBg').style.backgroundImage = `url('${bgImg||ph('배경 없음',780,1200)}')`;
+
+  const charEl=document.getElementById('stageChar');
+  if(scene.character){
+    const ch=getChar(scene.character);
+    const img = (ch&&ch.image) || ph(ch?ch.name:'캐릭터',600,900);
+    charEl.style.backgroundImage=`url('${img}')`;
+    charEl.style.opacity='1';
+  } else {
+    charEl.style.opacity='0';
+  }
+
+  document.getElementById('nameTag').textContent = scene.speaker || '???';
+  document.getElementById('nameTag').style.visibility = scene.speaker ? 'visible':'hidden';
+
+  typeText(scene.text||'');
+
+  const cl=document.getElementById('choiceLayer');
+  cl.classList.remove('active');
+  cl.innerHTML='';
+
+  playState.log.push({who:scene.speaker||'', text:scene.text||''});
+}
+
+/* 선택 후 캐릭터 반응 대사 출력 (다음 장면으로 넘어가기 전 단계) */
+function showReaction(opt){
+  const scene=currentScene();
+  playState.mode='reaction';
+  const reactionText = (opt.reaction && opt.reaction.trim()) ? opt.reaction : '(...)';
+  playState.pendingReaction = reactionText;
+
+  document.getElementById('nameTag').textContent = scene.speaker || '???';
+  document.getElementById('nameTag').style.visibility = scene.speaker ? 'visible':'hidden';
+
+  typeText(reactionText);
+  playState.log.push({who:scene.speaker||'', text:reactionText});
+}
+
+function typeText(full){
+  const el=document.getElementById('dText');
+  if(playState.typing) clearInterval(playState.typing);
+  el.textContent='';
+  let i=0;
+  playState.typing=setInterval(()=>{
+    el.textContent=full.slice(0,i+1);
+    i++;
+    if(i>=full.length){
+      clearInterval(playState.typing);
+      playState.typing=null;
+      onTypingComplete();
     }
+  },22);
+}
+
+function onTypingComplete(){
+  if(playState.mode==='reaction'){
+    if(playState.auto){ scheduleAuto(); }
+    return;
+  }
+  if(currentScene() && currentScene().type==='choice'){ showChoices(); return; }
+  if(playState.auto){ scheduleAuto(); }
+}
+
+function skipTyping(){
+  if(playState.typing){
+    clearInterval(playState.typing); playState.typing=null;
+    if(playState.mode==='reaction'){
+      document.getElementById('dText').textContent = playState.pendingReaction||'';
+    } else {
+      document.getElementById('dText').textContent = currentScene().text||'';
+      if(currentScene().type==='choice'){ showChoices(); }
+    }
+    return true;
+  }
+  return false;
+}
+
+function showChoices(){
+  const scene=currentScene();
+  const cl=document.getElementById('choiceLayer');
+  cl.innerHTML='';
+  (scene.options||[]).forEach(opt=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';
+    b.textContent=opt.text;
+    b.onclick=()=>selectChoice(opt);
+    cl.appendChild(b);
+  });
+  cl.classList.add('active');
+  clearAutoTimer();
+}
+
+function selectChoice(opt){
+  playState.score += (opt.score||0);
+  playState.choiceCount += 1;
+  document.getElementById('choiceLayer').classList.remove('active');
+  playState.log.push({who:'선택', text:'▸ '+opt.text});
+  showReaction(opt);
+}
+
+function advance(){
+  if(playState.mode==='reaction'){
+    if(skipTyping()) return;
+    playState.mode='scene';
+    nextScene();
+    return;
+  }
+  const scene=currentScene();
+  if(!scene) return;
+  if(scene.type==='choice' && document.getElementById('choiceLayer').classList.contains('active')) return;
+  if(skipTyping()) return;
+  nextScene();
+}
+function nextScene(){
+  playState.sceneIndex++;
+  renderScene();
+}
+
+function skipAll(){
+  clearAutoTimer(); playState.auto=false;
+  document.getElementById('autoBtn').classList.remove('active-toggle');
+  if(playState.mode==='reaction'){
+    playState.mode='scene';
+    playState.sceneIndex++;
+  }
+  while(playState.sceneIndex < playState.ep.scenes.length && currentScene().type!=='choice'){
+    playState.sceneIndex++;
+  }
+  renderScene();
+}
+
+function toggleAuto(){
+  playState.auto=!playState.auto;
+  document.getElementById('autoBtn').classList.toggle('active-toggle',playState.auto);
+  if(playState.auto && !playState.typing){ scheduleAuto(); }
+  if(!playState.auto){ clearAutoTimer(); }
+}
+function clearAutoTimer(){ if(playState && playState.autoTimer){ clearTimeout(playState.autoTimer); playState.autoTimer=null; } }
+function scheduleAuto(){
+  clearAutoTimer();
+  if(playState.mode==='reaction'){
+    playState.autoTimer=setTimeout(()=>{ if(playState.auto) advance(); }, 1300);
+    return;
+  }
+  const scene=currentScene();
+  if(!scene || scene.type==='choice') return;
+  playState.autoTimer=setTimeout(()=>{ if(playState.auto) advance(); }, 1300);
+}
+
+function toggleLog(show){
+  const panel=document.getElementById('logPanel');
+  if(show){
+    const entries=document.getElementById('logEntries');
+    entries.innerHTML = playState.log.map(l=>`<div class="log-entry"><div class="who">${l.who||'—'}</div><div class="txt">${l.text}</div></div>`).join('');
+    panel.classList.add('active');
+    entries.scrollTop=entries.scrollHeight;
+  } else {
+    panel.classList.remove('active');
+  }
+}
+
+/* ============================================================
+   에피소드 종료 처리
+   1) 점수 비율로 해피/노멀/배드 판정 -> 진행기록에 저장
+   2) 해피/노멀/배드 3종이 모두 수집된 상태라면, 방금 판정된 엔딩 대신
+      즉시 [히든 엔딩]을 재생하고 히든 엔딩도 수집 처리한다.
+============================================================ */
+function finishEpisode(){
+  const maxScore = playState.choiceCount*2;
+  let type='bad';
+  if(maxScore>0){
+    const ratio=playState.score/maxScore;
+    if(ratio>=0.75) type='happy';
+    else if(ratio>=0.35) type='normal';
+    else type='bad';
+  } else { type='normal'; }
+
+  const ep=playState.ep;
+  if(!DB.endingProgress[ep.id]) DB.endingProgress[ep.id]={};
+  const prog=DB.endingProgress[ep.id];
+  prog[type]=true;
+
+  // 히든 엔딩 해금 조건: 해피/노멀/배드 모두 한 번 이상 수집
+  let finalType=type;
+  if(prog.happy && prog.normal && prog.bad){
+    finalType='hidden';
+    prog.hidden=true;
+  }
+  saveData();
+
+  showEndingScreen(ep, finalType);
+}
+
+function endingLabel(type){
+  return type==='happy'?'해피 엔딩':type==='normal'?'노멀 엔딩':type==='bad'?'배드 엔딩':'히든 엔딩';
+}
+function showEndingScreen(ep, type){
+  const img=(ep.endingImages&&ep.endingImages[type]) || ph(endingLabel(type),780,1200);
+  document.getElementById('endingBg').style.backgroundImage=`url('${img}')`;
+  document.getElementById('endingTitle').textContent = endingLabel(type);
+  document.getElementById('endingTitle').className='ending-title serif '+type;
+  document.getElementById('endingDesc').textContent = (ep.endingTexts&&ep.endingTexts[type])||'';
+  nav('ending');
+}
+
+/* tap stage to advance (except during choice) */
+document.getElementById('screen-play').addEventListener('click',(e)=>{
+  if(e.target.closest('.dialogue-box')||e.target.closest('.stage-topbar')||e.target.closest('.choice-layer')||e.target.closest('.log-panel')) return;
+  advance();
+});
+
+/* ============================================================
+   Admin
+============================================================ */
+function openAdminLogin(){
+  nav('adminLogin');
+  document.getElementById('adminPassInput').value='';
+  document.getElementById('adminPassErr').textContent='';
+}
+function checkAdminPass(){
+  const v=document.getElementById('adminPassInput').value;
+  if(v==='0923'){ nav('admin'); switchAdminTab('chars'); }
+  else{ document.getElementById('adminPassErr').textContent='비밀번호가 올바르지 않습니다.'; }
+}
+
+let adminState={ tab:'chars', editingCharId:null, editingEpId:null, editingSceneId:null };
+
+function switchAdminTab(tab){
+  adminState.tab=tab;
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  if(tab==='chars') renderAdminChars();
+  if(tab==='eps') renderAdminEpisodes();
+  if(tab==='scenes') renderAdminScenes();
+}
+
+/* ---------- Characters ---------- */
+function renderAdminChars(){
+  const body=document.getElementById('adminBody');
+  let html=`<div class="section-title">캐릭터 목록</div>`;
+  DB.characters.forEach(ch=>{
+    html+=`<div class="admin-list-item" onclick="editChar('${ch.id}')">
+      <div class="info"><h5>${ch.name}</h5><span>${ch.age}세</span></div>
+      <div class="del" onclick="event.stopPropagation();deleteChar('${ch.id}')">✕</div>
+    </div>`;
+  });
+  html+=`<button class="btn-outline" onclick="editChar(null)">+ 새 캐릭터 추가</button>`;
+  html+=`<div id="charForm"></div>`;
+  body.innerHTML=html;
+  if(adminState.editingCharId!==undefined && adminState._showCharForm) renderCharForm(adminState.editingCharId);
+}
+function editChar(id){
+  adminState.editingCharId=id;
+  adminState._showCharForm=true;
+  renderCharForm(id);
+}
+function renderCharForm(id){
+  const ch = id ? getChar(id) : {id:null,name:'',age:'',image:'',intro:''};
+  const formHtml=`
+    <div class="section-title">${id?'캐릭터 수정':'새 캐릭터'}</div>
+    <div class="field"><label>초상화 업로드</label>
+      <div class="upload-box" style="background-image:url('${ch.image||''}')">
+        <span>이미지 선택</span>
+        <input type="file" accept="image/*" onchange="handleImageUpload(event,'char')">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>이름</label><input type="text" id="cf_name" value="${ch.name}"></div>
+      <div class="field" style="max-width:90px;"><label>나이</label><input type="number" id="cf_age" value="${ch.age}"></div>
+    </div>
+    <div class="field"><label>소개글</label><textarea id="cf_intro">${ch.intro||''}</textarea></div>
+    <button class="btn-main" onclick="saveChar('${id||''}')">저장</button>
+  `;
+  document.getElementById('charForm').innerHTML=formHtml;
+  document.getElementById('charForm')._tempImage = ch.image||'';
+}
+function handleImageUpload(evt,kind){
+  const file=evt.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const dataUrl=e.target.result;
+    evt.target.parentElement.style.backgroundImage=`url('${dataUrl}')`;
+    evt.target.parentElement.dataset.value=dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+function saveChar(id){
+  const name=document.getElementById('cf_name').value.trim();
+  const age=document.getElementById('cf_age').value.trim();
+  const intro=document.getElementById('cf_intro').value;
+  const uploadBox=document.querySelector('#charForm .upload-box');
+  const image=uploadBox.dataset.value || uploadBox.style.backgroundImage.slice(5,-2).replace(/^['"]|['"]$/g,'') || '';
+  if(!name){ toast('이름을 입력하세요'); return; }
+  if(id){
+    const ch=getChar(id);
+    ch.name=name; ch.age=age; ch.intro=intro; if(image) ch.image=image;
+  } else {
+    DB.characters.push({id:uid('c'),name,age,intro,image:image||''});
+  }
+  saveData();
+  adminState._showCharForm=false;
+  renderAdminChars();
+  toast('저장되었습니다');
+}
+function deleteChar(id){
+  if(!confirm('이 캐릭터를 삭제하시겠습니까?')) return;
+  DB.characters=DB.characters.filter(c=>c.id!==id);
+  saveData();
+  renderAdminChars();
+}
+
+/* ---------- Episodes ---------- */
+function renderAdminEpisodes(){
+  const body=document.getElementById('adminBody');
+  let html=`<div class="section-title">에피소드 목록</div>`;
+  DB.episodes.forEach(ep=>{
+    html+=`<div class="admin-list-item" onclick="editEp('${ep.id}')">
+      <div class="info"><h5>${ep.title}</h5><span>${(ep.scenes||[]).length}개 장면</span></div>
+      <div class="del" onclick="event.stopPropagation();deleteEp('${ep.id}')">✕</div>
+    </div>`;
+  });
+  html+=`<button class="btn-outline" onclick="editEp(null)">+ 새 에피소드 추가</button>`;
+  html+=`<div id="epForm"></div>`;
+  body.innerHTML=html;
+}
+function editEp(id){
+  adminState.editingEpId=id;
+  const ep = id ? getEp(id) : {id:null,title:'',description:'',characters:[],bgDefault:'',endingImages:{happy:'',normal:'',bad:'',hidden:''},endingTexts:{happy:'',normal:'',bad:'',hidden:''}};
+  const charChips = DB.characters.map(c=>{
+    const sel = ep.characters && ep.characters.includes(c.id);
+    return `<div class="chip ${sel?'sel':''}" data-cid="${c.id}" onclick="this.classList.toggle('sel')">${c.name}</div>`;
+  }).join('');
+  const html=`
+    <div class="section-title">${id?'에피소드 수정':'새 에피소드'}</div>
+    <div class="field"><label>제목</label><input type="text" id="ef_title" value="${ep.title}"></div>
+    <div class="field"><label>설명</label><textarea id="ef_desc">${ep.description||''}</textarea></div>
+    <div class="field"><label>기본 배경 (장면별 배경 미지정시 사용)</label>
+      <div class="upload-box" style="background-image:url('${ep.bgDefault||''}')">
+        <span>배경 선택</span><input type="file" accept="image/*" onchange="handleImageUpload(event)">
+      </div>
+    </div>
+    <div class="field"><label>등장 캐릭터</label><div class="chip-select" id="ef_chars">${charChips}</div></div>
+    <div class="section-title">엔딩 일러스트 &amp; 텍스트</div>
+    ${['happy','normal','bad','hidden'].map(k=>{
+      const label=k==='happy'?'해피 엔딩':k==='normal'?'노멀 엔딩':k==='bad'?'배드 엔딩':'히든 엔딩';
+      const hint = k==='hidden' ? `<div style="font-size:10.5px;color:var(--text-faint);margin:-4px 0 8px;">※ 해피·노멀·배드 엔딩을 모두 감상하면 자동으로 해금됩니다.</div>` : '';
+      return `<div class="field"><label>${label} 이미지</label>${hint}
+        <div class="upload-box" style="background-image:url('${(ep.endingImages&&ep.endingImages[k])||''}')" id="ef_endimg_${k}">
+          <span>이미지 선택</span><input type="file" accept="image/*" onchange="handleImageUpload(event)">
+        </div>
+        <textarea id="ef_endtxt_${k}" style="margin-top:6px;" placeholder="${label} 문구">${(ep.endingTexts&&ep.endingTexts[k])||''}</textarea>
+      </div>`;
+    }).join('')}
+    <button class="btn-main" onclick="saveEp('${id||''}')">저장</button>
+  `;
+  document.getElementById('epForm').innerHTML=html;
+}
+function readUploadValue(el){
+  if(!el) return '';
+  return el.dataset.value || '';
+}
+function saveEp(id){
+  const title=document.getElementById('ef_title').value.trim();
+  const description=document.getElementById('ef_desc').value;
+  if(!title){ toast('제목을 입력하세요'); return; }
+  const chars=[...document.querySelectorAll('#ef_chars .chip.sel')].map(c=>c.dataset.cid);
+  const bgBox=document.querySelector('#epForm > .field .upload-box');
+  const bgDefault=readUploadValue(bgBox);
+  const endingImages={}, endingTexts={};
+  ['happy','normal','bad','hidden'].forEach(k=>{
+    endingImages[k]=readUploadValue(document.getElementById('ef_endimg_'+k));
+    endingTexts[k]=document.getElementById('ef_endtxt_'+k).value;
+  });
+
+  if(id){
+    const ep=getEp(id);
+    ep.title=title; ep.description=description; ep.characters=chars;
+    if(bgDefault) ep.bgDefault=bgDefault;
+    ep.endingImages=ep.endingImages||{};
+    ep.endingTexts=ep.endingTexts||{};
+    ['happy','normal','bad','hidden'].forEach(k=>{
+      if(endingImages[k]) ep.endingImages[k]=endingImages[k];
+      ep.endingTexts[k]=endingTexts[k];
+    });
+  } else {
+    DB.episodes.push({
+      id:uid('ep'), title, description, characters:chars, bgDefault:bgDefault||'',
+      scenes:[], endingImages, endingTexts
+    });
+  }
+  saveData();
+  renderAdminEpisodes();
+  toast('저장되었습니다');
+}
+function deleteEp(id){
+  if(!confirm('이 에피소드를 삭제하시겠습니까? (모든 장면 포함)')) return;
+  DB.episodes=DB.episodes.filter(e=>e.id!==id);
+  delete DB.endingProgress[id];
+  saveData();
+  renderAdminEpisodes();
+}
+
+/* ---------- Scenes ---------- */
+function renderAdminScenes(){
+  const body=document.getElementById('adminBody');
+  if(DB.episodes.length===0){ body.innerHTML='<div class="empty-note">먼저 에피소드를 추가하세요.</div>'; return; }
+  const selId = adminState.editingEpId && getEp(adminState.editingEpId) ? adminState.editingEpId : DB.episodes[0].id;
+  adminState.editingEpId=selId;
+  const options=DB.episodes.map(e=>`<option value="${e.id}" ${e.id===selId?'selected':''}>${e.title}</option>`).join('');
+  let html=`<div class="section-title">장면 관리</div>
+    <div class="field"><label>대상 에피소드</label>
+      <select id="sceneEpSelect" onchange="adminState.editingEpId=this.value;renderAdminScenes();">${options}</select>
+    </div>`;
+  const ep=getEp(selId);
+  (ep.scenes||[]).forEach((sc,idx)=>{
+    const chName = sc.character ? (getChar(sc.character)||{}).name : '(없음)';
+    html+=`<div class="scene-item">
+      <div class="stype">#${idx+1} · ${sc.type==='choice'?'선택지':'대사'} · ${chName}</div>
+      <div class="stxt">${(sc.text||'').slice(0,60)}</div>
+      <div class="sops">
+        <span onclick="editScene('${sc.id}')">수정</span>
+        <span onclick="moveScene('${sc.id}',-1)">▲ 위로</span>
+        <span onclick="moveScene('${sc.id}',1)">▼ 아래로</span>
+        <span onclick="deleteScene('${sc.id}')" style="color:var(--bad)">삭제</span>
+      </div>
+    </div>`;
+  });
+  html+=`<button class="btn-outline" onclick="editScene(null)">+ 새 장면 추가</button>`;
+  html+=`<div id="sceneForm"></div>`;
+  body.innerHTML=html;
+}
+function moveScene(sceneId,dir){
+  const ep=getEp(adminState.editingEpId);
+  const idx=ep.scenes.findIndex(s=>s.id===sceneId);
+  const ni=idx+dir;
+  if(ni<0||ni>=ep.scenes.length) return;
+  [ep.scenes[idx],ep.scenes[ni]]=[ep.scenes[ni],ep.scenes[idx]];
+  saveData(); renderAdminScenes();
+}
+function deleteScene(sceneId){
+  if(!confirm('이 장면을 삭제하시겠습니까?')) return;
+  const ep=getEp(adminState.editingEpId);
+  ep.scenes=ep.scenes.filter(s=>s.id!==sceneId);
+  saveData(); renderAdminScenes();
+}
+function editScene(sceneId){
+  adminState.editingSceneId=sceneId;
+  const ep=getEp(adminState.editingEpId);
+  const sc = sceneId ? ep.scenes.find(s=>s.id===sceneId) : {type:'dialogue',bg:'',character:'',speaker:'',text:'',options:[{text:'',score:2,reaction:''},{text:'',score:1,reaction:''},{text:'',score:0,reaction:''}]};
+  const charOptions = `<option value="">(없음)</option>` + (ep.characters||[]).map(cid=>{
+    const c=getChar(cid); if(!c) return '';
+    return `<option value="${cid}" ${sc.character===cid?'selected':''}>${c.name}</option>`;
+  }).join('');
+  const isChoice = sc.type==='choice';
+  const opts = sc.options && sc.options.length===3 ? sc.options : [{text:'',score:2,reaction:''},{text:'',score:1,reaction:''},{text:'',score:0,reaction:''}];
+  const optLabels=['A','B','C'];
+  const html=`
+    <div class="section-title">${sceneId?'장면 수정':'새 장면'}</div>
+    <div class="field"><label>장면 유형</label>
+      <select id="sf_type" onchange="toggleSceneChoiceFields()">
+        <option value="dialogue" ${!isChoice?'selected':''}>대사</option>
+        <option value="choice" ${isChoice?'selected':''}>선택지 (3개)</option>
+      </select>
+    </div>
+    <div class="field"><label>배경 이미지 (미지정시 에피소드 기본배경 사용)</label>
+      <div class="upload-box" style="background-image:url('${sc.bg||''}')" id="sf_bgbox">
+        <span>배경 선택</span><input type="file" accept="image/*" onchange="handleImageUpload(event)">
+      </div>
+    </div>
+    <div class="field"><label>등장 캐릭터</label><select id="sf_char">${charOptions}</select></div>
+    <div class="field"><label>화자 이름 (공백 가능)</label><input type="text" id="sf_speaker" value="${sc.speaker||''}"></div>
+    <div class="field"><label>대사 / 지문 텍스트</label><textarea id="sf_text">${sc.text||''}</textarea></div>
+    <div id="sf_choiceBlock" style="display:${isChoice?'block':'none'}">
+      <div class="section-title">선택지 (점수: +2 / +1 / +0)</div>
+      ${opts.map((o,i)=>`<div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line);">
+        <div style="font-size:11px;color:var(--gold);letter-spacing:.1em;margin-bottom:6px;">선택지 ${optLabels[i]}</div>
+        <div class="opt-row">
+          <input type="text" id="sf_opt_text_${i}" placeholder="선택지 ${optLabels[i]} 텍스트" value="${o.text||''}">
+          <input type="number" id="sf_opt_score_${i}" value="${o.score}">
+        </div>
+        <textarea id="sf_opt_reaction_${i}" placeholder="선택지 ${optLabels[i]} 클릭 시 출력될 반응 대사" style="margin-top:6px;min-height:48px;">${o.reaction||''}</textarea>
+      </div>`).join('')}
+    </div>
+    <button class="btn-main" onclick="saveScene('${sceneId||''}')">저장</button>
+  `;
+  document.getElementById('sceneForm').innerHTML=html;
+}
+function toggleSceneChoiceFields(){
+  const isChoice=document.getElementById('sf_type').value==='choice';
+  document.getElementById('sf_choiceBlock').style.display = isChoice?'block':'none';
+}
+function saveScene(sceneId){
+  const ep=getEp(adminState.editingEpId);
+  const type=document.getElementById('sf_type').value;
+  const bgBox=document.getElementById('sf_bgbox');
+  const bg=readUploadValue(bgBox);
+  const character=document.getElementById('sf_char').value;
+  const speaker=document.getElementById('sf_speaker').value;
+  const text=document.getElementById('sf_text').value;
+  let options=null;
+  if(type==='choice'){
+    options=[0,1,2].map(i=>({
+      text:document.getElementById('sf_opt_text_'+i).value || `선택지 ${i+1}`,
+      score:parseInt(document.getElementById('sf_opt_score_'+i).value)||0,
+      reaction:document.getElementById('sf_opt_reaction_'+i).value || ''
+    }));
+  }
+  if(sceneId){
+    const sc=ep.scenes.find(s=>s.id===sceneId);
+    sc.type=type; if(bg) sc.bg=bg; sc.character=character; sc.speaker=speaker; sc.text=text;
+    if(type==='choice') sc.options=options; else delete sc.options;
+  } else {
+    const newScene={id:uid('sc'),type,bg:bg||'',character,speaker,text};
+    if(type==='choice') newScene.options=options;
+    ep.scenes.push(newScene);
+  }
+  saveData();
+  renderAdminScenes();
+  toast('장면이 저장되었습니다');
+}
+
+/* ============================================================
+   init
+============================================================ */
+nav('title');
 </script>
 </body>
 </html>
